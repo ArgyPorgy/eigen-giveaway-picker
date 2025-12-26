@@ -59,7 +59,10 @@ export function useMarket(marketId: number) {
     functionName: 'getMarket',
     args: [BigInt(marketId)],
     query: {
-      staleTime: 0, // Always consider data stale so refetch works
+      staleTime: 0, // Always consider data stale
+      gcTime: 0, // Don't cache (formerly cacheTime)
+      refetchOnMount: true, // Always refetch on mount
+      refetchOnWindowFocus: true, // Refetch when window gains focus
     },
   });
 }

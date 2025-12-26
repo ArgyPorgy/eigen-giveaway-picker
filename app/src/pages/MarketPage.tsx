@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAccount } from 'wagmi';
 import { useQueryClient } from '@tanstack/react-query';
@@ -44,9 +45,19 @@ export function MarketPage() {
   const address = embeddedWallet?.address || wagmiAddress || user?.wallet?.address;
 
   const queryClient = useQueryClient();
+  const [refreshKey, setRefreshKey] = useState(0);
   const { data: marketData, isLoading, error, refetch } = useMarket(marketId);
   const { data: positionData, refetch: refetchPosition } = usePosition(marketId, address as `0x${string}` | undefined);
   const { claimWinnings: claimWinningsPrivy, isPending: isClaiming } = usePrivyClaimWinnings();
+  
+  // Force re-render when marketData changes
+  useEffect(() => {
+    if (marketData) {
+      const [, , , , , , , yesPrice, noPrice] = marketData;
+      console.log('Market data changed:', { yesPrice: Number(yesPrice), noPrice: Number(noPrice) });
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [marketData]);
 
   if (isLoading) {
     return (
@@ -109,13 +120,30 @@ export function MarketPage() {
     }
   };
 
-  const handleTradeComplete = () => {
-    // Small delay to ensure state propagation, then force refetch
-    setTimeout(() => {
-      // Force refetch both queries
-      refetch();
-      refetchPosition();
-    }, 500);
+  const handleTradeComplete = async () => {
+    console.log('Trade complete - starting refetch...');
+    
+    // Wait a bit for blockchain state to propagate
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Invalidate all wagmi queries to force fresh data
+    await queryClient.invalidateQueries();
+    console.log('Queries invalidated');
+    
+    // Force refetch both queries
+    const marketResult = await refetch();
+    const positionResult = await refetchPosition();
+    
+    console.log('Market data after refetch:', marketResult.data);
+    console.log('Position data after refetch:', positionResult.data);
+    
+    // Refetch again after a short delay to ensure we get the latest data
+    setTimeout(async () => {
+      const marketResult2 = await refetch();
+      const positionResult2 = await refetchPosition();
+      console.log('Second refetch - Market:', marketResult2.data);
+      console.log('Second refetch - Position:', positionResult2.data);
+    }, 1000);
   };
 
   const timeLeft = () => {
@@ -298,6 +326,7 @@ export function MarketPage() {
         <div className="lg:col-span-1">
           <div className="sticky top-24">
             <TradingPanel
+              key={refreshKey}
               marketId={marketId}
               yesPrice={Number(yesPrice)}
               noPrice={Number(noPrice)}
