@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAccount, useBalance } from 'wagmi';
 import { formatEther, parseEther } from 'viem';
@@ -30,13 +30,12 @@ export function TradingPanel({
   ended,
   onTradeComplete,
 }: TradingPanelProps) {
-  const { login, authenticated, user } = usePrivy();
+  const { login, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const wagmiAddress = useAccount().address;
   
   // Get address from Privy embedded wallet (primary) or wagmi connected wallet
   const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
-  const address = embeddedWallet?.address || wagmiAddress || user?.wallet?.address;
   
   // Use embedded wallet address for balance if available
   const balanceAddress = embeddedWallet?.address || wagmiAddress;
@@ -138,6 +137,12 @@ export function TradingPanel({
   // Quick amount buttons
   const quickAmounts = ['0.001', '0.005', '0.01', '0.05'];
 
+  // Helper to render shares conditionally
+  const renderShares = (shares: bigint): ReactNode => {
+    if (shares <= 0n) return null;
+    return <div className="text-xs text-gray-500 mt-1">{formatShares(shares)} shares</div>;
+  };
+
   return (
     <div className="glass rounded-2xl overflow-hidden">
       {/* Header */}
@@ -203,11 +208,7 @@ export function TradingPanel({
               <div className={`text-2xl font-bold ${side === 'yes' ? 'text-accent-green' : 'text-white'}`}>
                 {(yesPrice / 100).toFixed(1)}%
               </div>
-              {yesShares > 0n && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {formatShares(yesShares)} shares
-                </div>
-              )}
+              {renderShares(yesShares)}
             </button>
             <button
               onClick={() => setSide('no')}
@@ -221,11 +222,7 @@ export function TradingPanel({
               <div className={`text-2xl font-bold ${side === 'no' ? 'text-accent-red' : 'text-white'}`}>
                 {(noPrice / 100).toFixed(1)}%
               </div>
-              {noShares > 0n && (
-                <div className="text-xs text-gray-500 mt-1">
-                  {formatShares(noShares)} shares
-                </div>
-              )}
+              {renderShares(noShares)}
             </button>
           </div>
 
@@ -348,12 +345,12 @@ export function TradingPanel({
           {/* Action Button */}
           <button
             onClick={mode === 'buy' ? handleBuy : handleSell}
-            disabled={
+            disabled={Boolean(
               isPending ||
               (mode === 'buy' && (!amount || parseFloat(amount) <= 0 || !buyValidation.valid)) ||
               (mode === 'sell' && sellAmount <= 0n) ||
               (mode === 'buy' && balance && amount && parseFloat(amount) > parseFloat(formatEther(balance.value)))
-            }
+            )}
             className={`w-full py-4 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === 'buy'
                 ? 'bg-gradient-to-r from-accent-green to-emerald-400 text-white hover:opacity-90'

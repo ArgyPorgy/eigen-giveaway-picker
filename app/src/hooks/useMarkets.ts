@@ -1,4 +1,4 @@
-import { useReadContract, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { PREDICTION_MARKET_ADDRESS, PREDICTION_MARKET_ABI } from '../contract';
 import { parseEther, formatEther } from 'viem';
 import { validateContractAddress } from '../utils/validation';

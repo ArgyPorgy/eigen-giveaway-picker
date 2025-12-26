@@ -43,8 +43,8 @@ export function MarketPage() {
   const address = embeddedWallet?.address || wagmiAddress || user?.wallet?.address;
 
   const { data: marketData, isLoading, error, refetch } = useMarket(marketId);
-  const { data: positionData, refetch: refetchPosition } = usePosition(marketId, address);
-  const { claimWinnings: claimWinningsPrivy, isPending: isClaiming, error: claimError } = usePrivyClaimWinnings();
+  const { data: positionData, refetch: refetchPosition } = usePosition(marketId, address as `0x${string}` | undefined);
+  const { claimWinnings: claimWinningsPrivy, isPending: isClaiming } = usePrivyClaimWinnings();
 
   if (isLoading) {
     return (
@@ -82,7 +82,7 @@ export function MarketPage() {
     );
   }
 
-  const [question, category, imageUrl, createdAt, endTime, resolved, outcome, yesPrice, noPrice, totalVolume] = marketData;
+  const [question, category, _imageUrl, _createdAt, endTime, resolved, outcome, yesPrice, noPrice, totalVolume] = marketData;
   const gradient = categoryColors[category] || categoryColors.default;
   const icon = categoryIcons[category] || categoryIcons.default;
   const endDate = new Date(Number(endTime) * 1000);

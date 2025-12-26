@@ -20,5 +20,5 @@ RUN npm install -g serve
 # Expose port
 EXPOSE 8080
 
-# Serve the built app
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Serve the built app (Render sets PORT env var)
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-8080}"]

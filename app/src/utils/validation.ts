@@ -1,5 +1,3 @@
-import { parseEther, formatEther } from 'viem';
-
 export function validateContractAddress(address: string): boolean {
   if (!address || address === '0x0000000000000000000000000000000000000000') {
     return false;

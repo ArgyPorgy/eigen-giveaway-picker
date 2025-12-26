@@ -13,7 +13,7 @@ export function PortfolioPage() {
   const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
   const address = embeddedWallet?.address || wagmiAddress || user?.wallet?.address;
 
-  const { data: positionsData, isLoading: positionsLoading } = useUserPositions(address);
+  const { data: positionsData, isLoading: positionsLoading } = useUserPositions(address as `0x${string}` | undefined);
   const { data: marketsData, isLoading: marketsLoading } = useMarkets(0, 100);
 
   const positions = useMemo(() => {

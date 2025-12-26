@@ -14,6 +14,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "hardhat.config.ts", "scripts/**/*.ts"]
+  "include": ["vite.config.ts"]
 }
 

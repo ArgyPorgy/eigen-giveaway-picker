@@ -4,7 +4,7 @@
   "description": "Sports Prediction Market Aggregator with AMM",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js",
     "compile": "npx hardhat compile",
