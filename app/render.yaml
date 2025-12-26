@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sportsbet
+    env: node
+    rootDir: app
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist -l $PORT
+    envVars:
+      - key: VITE_PRIVY_APP_ID
+        sync: false
+      - key: VITE_CONTRACT_ADDRESS
+        value: 0x0a64aA54141753Df024789Fb0abAb7DB6122d6bE
+    healthCheckPath: /
+    plan: free
+

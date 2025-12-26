@@ -1,0 +1,26 @@
+# Dockerfile for Render deployment (alternative approach)
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Build the app
+RUN npm run build
+
+# Install serve for static file serving
+RUN npm install -g serve
+
+# Expose port (Render will set PORT env var)
+EXPOSE 8080
+
+# Start server
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-8080}"]
+

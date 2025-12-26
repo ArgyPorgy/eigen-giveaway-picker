@@ -1,0 +1,52 @@
+# Environment variables (CRITICAL - Never commit!)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+.env*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Hardhat (may contain metadata)
+cache/
+artifacts/
+typechain-types/
+typechain/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and keys (CRITICAL - Never commit!)
+*.pem
+*.key
+*.cert
+*.priv
+secrets/
+.secrets/
+*.secret
+
+# Temporary
+tmp/
+temp/
+*.tmp
