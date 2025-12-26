@@ -11,7 +11,13 @@ RUN npm install
 # Copy source files
 COPY . .
 
-# Build the app
+# Build the app (Vite embeds env vars at build time)
+# ARG allows passing build-time variables
+ARG VITE_PRIVY_APP_ID
+ARG VITE_CONTRACT_ADDRESS
+ENV VITE_PRIVY_APP_ID=${VITE_PRIVY_APP_ID}
+ENV VITE_CONTRACT_ADDRESS=${VITE_CONTRACT_ADDRESS}
+
 RUN npm run build
 
 # Install serve to serve the built app
