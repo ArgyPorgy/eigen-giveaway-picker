@@ -92,10 +92,17 @@ export function TradingPanel({
     try {
       // Calculate slippage protection (1% default)
       const minShares = calculateMinShares(buyQuote, 1);
+      console.log('[TradingPanel] Starting buy transaction...');
       await buySharesPrivy(marketId, side === 'yes', amount, minShares);
+      console.log('[TradingPanel] Buy transaction completed, calling onTradeComplete');
       setBuySuccess(true);
       setAmount('');
-      onTradeComplete?.();
+      if (onTradeComplete) {
+        console.log('[TradingPanel] onTradeComplete callback exists, calling it...');
+        onTradeComplete();
+      } else {
+        console.warn('[TradingPanel] onTradeComplete callback is not defined!');
+      }
     } catch (err: any) {
       console.error('Buy error:', err);
       // Error is handled by hook
@@ -114,10 +121,17 @@ export function TradingPanel({
     try {
       // Calculate slippage protection (1% default)
       const minEth = calculateMinEth(sellQuote, 1);
+      console.log('[TradingPanel] Starting sell transaction...');
       await sellSharesPrivy(marketId, side === 'yes', sellAmount, minEth);
+      console.log('[TradingPanel] Sell transaction completed, calling onTradeComplete');
       setSellSuccess(true);
       setSellPercent(100);
-      onTradeComplete?.();
+      if (onTradeComplete) {
+        console.log('[TradingPanel] onTradeComplete callback exists, calling it...');
+        onTradeComplete();
+      } else {
+        console.warn('[TradingPanel] onTradeComplete callback is not defined!');
+      }
     } catch (err: any) {
       console.error('Sell error:', err);
       // Error is handled by hook

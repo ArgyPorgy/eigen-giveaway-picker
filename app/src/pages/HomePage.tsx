@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
+import { useReadContracts } from 'wagmi';
 import { useMarkets, useMarketCount } from '../hooks/useMarkets';
 import { MarketCard } from '../components/MarketCard';
 import { ContractWarning } from '../components/ContractWarning';
+import { PREDICTION_MARKET_ADDRESS, PREDICTION_MARKET_ABI } from '../contract';
 
-const categories = ['All', 'NFL', 'NBA', 'Soccer', 'MLB', 'NHL', 'Tennis', 'UFC', 'Golf'];
+const categories = ['All', 'Trending', 'NFL', 'NBA', 'Soccer', 'MLB', 'NHL', 'Tennis', 'UFC', 'Golf'];
 
 export function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -28,13 +30,57 @@ export function HomePage() {
     }));
   }, [marketsData]);
 
+  // Batch fetch volumes for all markets using useReadContracts
+  const volumeContracts = useMemo(() => {
+    if (markets.length === 0) return [];
+    return markets.map(market => ({
+      address: PREDICTION_MARKET_ADDRESS as `0x${string}`,
+      abi: PREDICTION_MARKET_ABI,
+      functionName: 'markets' as const,
+      args: [BigInt(market.id)],
+    }));
+  }, [markets]);
+
+  const { data: volumesData } = useReadContracts({
+    contracts: volumeContracts,
+    query: {
+      enabled: volumeContracts.length > 0,
+    },
+  });
+
+  // Extract totalVolume from the markets mapping
+  // markets struct: question(0), category(1), imageUrl(2), createdAt(3), endTime(4), resolved(5), outcome(6), yesPool(7), noPool(8), totalVolume(9), exists(10)
+  const marketVolumes = useMemo(() => {
+    if (!volumesData || volumesData.length === 0) {
+      return markets.map(() => 0n);
+    }
+    return volumesData.map((marketData: any) => {
+      if (!marketData?.result || !Array.isArray(marketData.result)) return 0n;
+      // totalVolume is at index 9
+      const volume = marketData.result[9];
+      return volume ? (typeof volume === 'bigint' ? volume : BigInt(volume)) : 0n;
+    });
+  }, [volumesData, markets.length]);
+  
+  // Enrich markets with volume data
+  const marketsWithVolume = useMemo(() => {
+    return markets.map((market, i) => ({
+      ...market,
+      totalVolume: marketVolumes[i] || 0n,
+    }));
+  }, [markets, marketVolumes]);
+
   const filteredMarkets = useMemo(() => {
-    return markets.filter((market) => {
-      const matchesCategory = selectedCategory === 'All' || market.category === selectedCategory;
+    return marketsWithVolume.filter((market) => {
+      const matchesCategory = selectedCategory === 'All' 
+        ? true
+        : selectedCategory === 'Trending'
+        ? market.totalVolume > 0n
+        : market.category === selectedCategory;
       const matchesSearch = market.question.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [markets, selectedCategory, searchQuery]);
+  }, [marketsWithVolume, selectedCategory, searchQuery]);
 
   const activeMarkets = filteredMarkets.filter(m => !m.resolved && m.endTime * 1000 > Date.now());
   const endedMarkets = filteredMarkets.filter(m => m.resolved || m.endTime * 1000 <= Date.now());
@@ -91,19 +137,28 @@ export function HomePage() {
 
         {/* Category Filter */}
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-accent-blue text-white'
-                  : 'bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isTrending = cat === 'Trending';
+            const isSelected = selectedCategory === cat;
+            
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
+                  isSelected
+                    ? isTrending
+                      ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-400'
+                      : 'bg-accent-blue text-white'
+                    : isTrending
+                    ? 'bg-dark-700 text-yellow-400 hover:bg-dark-600 hover:text-yellow-300 border border-yellow-500/30'
+                    : 'bg-dark-700 text-gray-400 hover:bg-dark-600 hover:text-white'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -165,7 +220,7 @@ export function HomePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeMarkets.map((market) => (
-              <MarketCard key={market.id} {...market} />
+              <MarketCard key={market.id} {...market} totalVolume={market.totalVolume} />
             ))}
           </div>
         </div>
@@ -179,7 +234,7 @@ export function HomePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
             {endedMarkets.map((market) => (
-              <MarketCard key={market.id} {...market} />
+              <MarketCard key={market.id} {...market} totalVolume={market.totalVolume} />
             ))}
           </div>
         </div>

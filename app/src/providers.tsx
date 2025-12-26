@@ -39,6 +39,10 @@ export function Providers({ children }: ProvidersProps) {
         },
         defaultChain: sepolia,
         supportedChains: [sepolia],
+        // Disable analytics to avoid CORS errors
+        analytics: {
+          enabled: false,
+        },
       }}
     >
       <QueryClientProvider client={queryClient}>
