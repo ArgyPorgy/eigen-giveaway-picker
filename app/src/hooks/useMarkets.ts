@@ -58,6 +58,9 @@ export function useMarket(marketId: number) {
     abi: PREDICTION_MARKET_ABI,
     functionName: 'getMarket',
     args: [BigInt(marketId)],
+    query: {
+      staleTime: 0, // Always consider data stale so refetch works
+    },
   });
 }
 

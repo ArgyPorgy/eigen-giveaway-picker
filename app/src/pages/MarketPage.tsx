@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useAccount } from 'wagmi';
+import { useQueryClient } from '@tanstack/react-query';
 import { formatEther } from 'viem';
 import { useMarket, usePosition, formatShares } from '../hooks/useMarkets';
 import { usePrivyClaimWinnings } from '../hooks/usePrivyContract';
@@ -42,6 +43,7 @@ export function MarketPage() {
   const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
   const address = embeddedWallet?.address || wagmiAddress || user?.wallet?.address;
 
+  const queryClient = useQueryClient();
   const { data: marketData, isLoading, error, refetch } = useMarket(marketId);
   const { data: positionData, refetch: refetchPosition } = usePosition(marketId, address as `0x${string}` | undefined);
   const { claimWinnings: claimWinningsPrivy, isPending: isClaiming } = usePrivyClaimWinnings();
@@ -108,8 +110,12 @@ export function MarketPage() {
   };
 
   const handleTradeComplete = () => {
-    refetch();
-    refetchPosition();
+    // Small delay to ensure state propagation, then force refetch
+    setTimeout(() => {
+      // Force refetch both queries
+      refetch();
+      refetchPosition();
+    }, 500);
   };
 
   const timeLeft = () => {

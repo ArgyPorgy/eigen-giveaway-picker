@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useWallets } from '@privy-io/react-auth';
 import { PREDICTION_MARKET_ADDRESS, PREDICTION_MARKET_ABI } from '../contract';
-import { parseEther } from 'viem';
-import { createWalletClient, custom, encodeFunctionData } from 'viem';
+import { parseEther, waitForTransactionReceipt } from 'viem';
+import { createWalletClient, custom, encodeFunctionData, createPublicClient } from 'viem';
 import { sepolia } from 'viem/chains';
 
 export function usePrivyBuyShares() {
@@ -49,15 +49,27 @@ export function usePrivyBuyShares() {
       });
 
       // Send transaction
-      const result = await walletClient.sendTransaction({
+      const hash = await walletClient.sendTransaction({
         to: PREDICTION_MARKET_ADDRESS as `0x${string}`,
         data,
         value,
         account,
       });
 
-      setHash(result);
-      return result;
+      setHash(hash);
+
+      // Wait for transaction confirmation using the same provider
+      const publicClient = createPublicClient({
+        chain: sepolia,
+        transport: custom(provider),
+      });
+
+      await waitForTransactionReceipt(publicClient, { hash });
+
+      // Add a small delay to ensure blockchain state has fully propagated
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      return hash;
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err.message || 'Transaction failed');
       setError(error);
@@ -107,14 +119,26 @@ export function usePrivySellShares() {
         args: [BigInt(marketId), isYes, sharesAmount, minEth],
       });
 
-      const result = await walletClient.sendTransaction({
+      const hash = await walletClient.sendTransaction({
         to: PREDICTION_MARKET_ADDRESS as `0x${string}`,
         data,
         account,
       });
 
-      setHash(result);
-      return result;
+      setHash(hash);
+
+      // Wait for transaction confirmation using the same provider
+      const publicClient = createPublicClient({
+        chain: sepolia,
+        transport: custom(provider),
+      });
+
+      await waitForTransactionReceipt(publicClient, { hash });
+
+      // Add a small delay to ensure blockchain state has fully propagated
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      return hash;
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err.message || 'Transaction failed');
       setError(error);
@@ -159,14 +183,26 @@ export function usePrivyClaimWinnings() {
         args: [BigInt(marketId)],
       });
 
-      const result = await walletClient.sendTransaction({
+      const hash = await walletClient.sendTransaction({
         to: PREDICTION_MARKET_ADDRESS as `0x${string}`,
         data,
         account,
       });
 
-      setHash(result);
-      return result;
+      setHash(hash);
+
+      // Wait for transaction confirmation using the same provider
+      const publicClient = createPublicClient({
+        chain: sepolia,
+        transport: custom(provider),
+      });
+
+      await waitForTransactionReceipt(publicClient, { hash });
+
+      // Add a small delay to ensure blockchain state has fully propagated
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      return hash;
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err.message || 'Transaction failed');
       setError(error);
