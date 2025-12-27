@@ -23,6 +23,7 @@ export function Header() {
   const navItems = [
     { path: '/', label: 'Markets' },
     { path: '/portfolio', label: 'Portfolio' },
+    { path: '/how-it-works', label: 'How It Works' },
   ];
 
   const formatAddress = (addr: string) => {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWallets } from '@privy-io/react-auth';
 import { PREDICTION_MARKET_ADDRESS, PREDICTION_MARKET_ABI } from '../contract';
-import { parseEther, waitForTransactionReceipt } from 'viem';
+import { parseEther } from 'viem';
 import { createWalletClient, custom, encodeFunctionData, createPublicClient } from 'viem';
 import { sepolia } from 'viem/chains';
 
@@ -64,7 +64,7 @@ export function usePrivyBuyShares() {
         transport: custom(provider),
       });
 
-      await waitForTransactionReceipt(publicClient, { hash });
+      await publicClient.waitForTransactionReceipt({ hash });
 
       // Add a small delay to ensure blockchain state has fully propagated
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -133,7 +133,7 @@ export function usePrivySellShares() {
         transport: custom(provider),
       });
 
-      await waitForTransactionReceipt(publicClient, { hash });
+      await publicClient.waitForTransactionReceipt({ hash });
 
       // Add a small delay to ensure blockchain state has fully propagated
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -197,7 +197,7 @@ export function usePrivyClaimWinnings() {
         transport: custom(provider),
       });
 
-      await waitForTransactionReceipt(publicClient, { hash });
+      await publicClient.waitForTransactionReceipt({ hash });
 
       // Add a small delay to ensure blockchain state has fully propagated
       await new Promise(resolve => setTimeout(resolve, 1500));

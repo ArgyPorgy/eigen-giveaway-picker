@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { MarketPage } from './pages/MarketPage';
 import { PortfolioPage } from './pages/PortfolioPage';
+import { HowItWorksPage } from './pages/HowItWorksPage';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/market/:id" element={<MarketPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
         </Routes>
       </main>
     </div>
