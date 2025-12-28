@@ -56,7 +56,7 @@ export function Header() {
               </svg>
             </div>
             <span className="font-display font-bold text-xl tracking-tight">
-              Sports<span className="text-accent-blue">Bet</span>
+              Aggre<span className="text-accent-blue">gator</span>
             </span>
           </Link>
 
